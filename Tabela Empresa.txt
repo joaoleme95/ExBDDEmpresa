@@ -1,0 +1,106 @@
+-- Tabela para os Itens
+CREATE TABLE Itens (
+    ItemID NUMBER PRIMARY KEY,
+    Nome VARCHAR(50),
+    QuantidadeEstoque NUMBER,
+    EstoqueMinimo NUMBER,
+    DataFabricacao DATE,
+    Perecivel VARCHAR(50),
+    Valor DECIMAL(10, 2),
+    MarcaID NUMBER
+);
+
+-- Inserção de dados na tabela Itens
+INSERT INTO Itens (ItemID, Nome, QuantidadeEstoque, EstoqueMinimo, DataFabricacao, Perecivel, Valor, MarcaID) 
+VALUES (1, 'Banana', 100, 50, TO_DATE('22-11-03', 'YYYY-MM-DD'), 'SIM', 5.00, 1);
+
+INSERT INTO Itens (ItemID, Nome, QuantidadeEstoque, EstoqueMinimo, DataFabricacao, Perecivel, Valor, MarcaID) 
+VALUES (2, 'Maçã', 75, 40, TO_DATE('2023-10-15', 'YYYY-MM-DD'), 'SIM', 3.50, 2);
+
+INSERT INTO Itens (ItemID, Nome, QuantidadeEstoque, EstoqueMinimo, DataFabricacao, Perecivel, Valor, MarcaID) 
+VALUES (3, 'Pera', 60, 30, TO_DATE('2023-10-15', 'YYYY-MM-DD'), 'SIM', 4.00, 3);
+
+INSERT INTO Itens (ItemID, Nome, QuantidadeEstoque, EstoqueMinimo, DataFabricacao, Perecivel, Valor, MarcaID) 
+VALUES (4, 'Laranja', 90, 50, TO_DATE('2023-10-15', 'YYYY-MM-DD'), 'SIM', 2.75, 4);
+
+INSERT INTO Itens (ItemID, Nome, QuantidadeEstoque, EstoqueMinimo, Perecivel, Valor, MarcaID) 
+VALUES (5, 'Sabonete', 200, 100, 'NÃO', 2.50, 5);
+
+INSERT INTO Itens (ItemID, Nome, QuantidadeEstoque, EstoqueMinimo, Perecivel, Valor, MarcaID) 
+VALUES (6, 'Caneta', 150, 50, 'NÃO', 1.00, 6);
+
+-- Tabela para os Fornecedores
+CREATE TABLE Fornecedores (
+    FornecedorID NUMBER PRIMARY KEY,
+    Nome VARCHAR(50),
+    Email VARCHAR(50)
+);
+
+-- Inserção de dados na tabela Fornecedores
+INSERT INTO Fornecedores (FornecedorID, Nome, Email) VALUES(1, 'João Fornecedor', 'JoaoFornecedor@gmail.com');
+INSERT INTO Fornecedores (FornecedorID, Nome, Email) VALUES(2, 'Lucas Fornecedor', 'LucasFornecedor@gmail.com');
+INSERT INTO Fornecedores (FornecedorID, Nome, Email) VALUES(3, 'Cleber Fornecedor', 'CleberFornecedor@gmail.com');
+
+-- Tabela de Associação entre Itens e Fornecedores
+CREATE TABLE ItemFornecedor (
+  ItemID NUMBER,
+  FornecedorID NUMBER,
+  PRIMARY KEY (ItemID, FornecedorID),
+  FOREIGN KEY (ItemID) REFERENCES Itens (ItemID),
+  FOREIGN KEY (FornecedorID) REFERENCES Fornecedores (FornecedorID)
+);
+
+-- Criação de uma View de Itens com Marcas
+CREATE VIEW ItensComMarcas AS
+SELECT I.*, M.Nome AS NomeDaMarca
+FROM Itens I
+INNER JOIN Marcas M ON I.MarcaID = M.MarcaID;
+-- Mostra todos os itens e suas respectivas marcas
+
+-- Criação de uma View de Itens com Fornecedores
+CREATE VIEW ItensComFornecedores AS
+SELECT I.*, F.Nome AS NomeDoFornecedor
+FROM Itens I
+INNER JOIN Fornecedores F ON I.ItemID = F.FornecedorID;
+-- Mostra todos os itens e seus respectivos fornecedores
+
+-- Criação de uma View de Itens com Fornecedores e Marcas
+CREATE VIEW ItensComFornecedoresEMarcas AS
+SELECT I.*, M.Nome AS NomeDaMarca, F.Nome AS NomeDoFornecedor
+FROM Itens I
+INNER JOIN Marcas M ON I.MarcaID = M.MarcaID
+INNER JOIN ItemFornecedor IF ON I.ItemID = IF.ItemID
+INNER JOIN Fornecedores F ON IF.FornecedorID = F.FornecedorID;
+-- Mostra todos os itens e seus respectivos fornecedores e marcas
+
+-- Criação de uma View de Itens com Estoque Abaixo do Mínimo
+CREATE VIEW ItensComEstoqueAbaixoMinimo AS
+SELECT *
+FROM Itens
+WHERE QuantidadeEstoque < EstoqueMinimo;
+-- Mostra todos os itens com estoque abaixo do mínimo
+
+-- Adição de um campo de Data de Validade na tabela de Itens
+ALTER TABLE Itens
+ADD DataValidade DATE;
+
+-- Inserção de dados na tabela de Itens com Data de Validade
+INSERT INTO Itens (ItemID, Nome, QuantidadeEstoque, EstoqueMinimo, DataFabricacao, Perecivel, Valor, MarcaID, DataValidade)
+VALUES (7, 'Leite', 50, 20, TO_DATE('2023-10-15', 'YYYY-MM-DD'), 'SIM', 2.00, 1, TO_DATE('2023-12-31', 'YYYY-MM-DD'));
+
+INSERT INTO Itens (ItemID, Nome, QuantidadeEstoque, EstoqueMinimo, DataFabricacao, Perecivel, Valor, MarcaID, DataValidade)
+VALUES (8, 'Iogurte', 60, 30, TO_DATE('2023-10-15', 'YYYY-MM-DD'), 'SIM', 1.50, 2, TO_DATE('2023-11-30', 'YYYY-MM-DD'));
+-- Novos dados com o campo de Data de Validade
+
+-- Criação de uma View de Itens com Validade Vencida
+CREATE VIEW ItensComValidadeVencida AS
+SELECT *
+FROM Itens
+WHERE DataValidade < SYSDATE;
+-- Mostra todos os itens com validade vencida
+
+-- Consulta de Itens com Preço Acima da Média
+SELECT *
+FROM Itens
+WHERE Valor > (SELECT AVG(Valor) FROM Itens);
+-- Mostra itens com preço acima da média
